@@ -15,12 +15,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
   title: "Estagiliza — Encontra o teu Estágio ou Emprego com IA em Angola",
   description:
     "Plataforma inteligente que usa Inteligência Artificial para analisar o teu CV, encontrar as melhores vagas de emprego e estágio em Angola, e gerar cartas de motivação automáticas.",
   keywords: ["estágio", "emprego", "Angola", "IA", "inteligência artificial", "candidatura", "Luanda", "vagas de emprego", "recrutamento"],
-  metadataBase: new URL("https://estagiliza.vercel.app"),
+  metadataBase: new URL(baseUrl),
   openGraph: {
     title: "Estagiliza — Emprego & Estágio com IA em Angola",
     description: "Analisa o teu CV com Inteligência Artificial, encontra vagas 100% reais em Angola e candidata-te de forma instantânea com cartas personalizadas.",
