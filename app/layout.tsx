@@ -16,15 +16,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Estagiliza — Encontra o teu Estágio ou Emprego com IA",
+  title: "Estagiliza — Encontra o teu Estágio ou Emprego com IA em Angola",
   description:
-    "Plataforma angolana que usa Inteligência Artificial para encontrar as melhores oportunidades de estágio e emprego adaptadas ao teu perfil. Carrega o teu CV e deixa a IA trabalhar.",
-  keywords: ["estágio", "emprego", "Angola", "IA", "inteligência artificial", "candidatura", "Luanda", "CPLP"],
+    "Plataforma inteligente que usa Inteligência Artificial para analisar o teu CV, encontrar as melhores vagas de emprego e estágio em Angola, e gerar cartas de motivação automáticas.",
+  keywords: ["estágio", "emprego", "Angola", "IA", "inteligência artificial", "candidatura", "Luanda", "vagas de emprego", "recrutamento"],
+  metadataBase: new URL("https://estagiliza.vercel.app"),
   openGraph: {
-    title: "Estagiliza — Encontra o teu Estágio ou Emprego com IA",
-    description: "A plataforma de emprego e estágio com IA para Angola e CPLP.",
+    title: "Estagiliza — Emprego & Estágio com IA em Angola",
+    description: "Analisa o teu CV com Inteligência Artificial, encontra vagas 100% reais em Angola e candidata-te de forma instantânea com cartas personalizadas.",
+    url: "https://estagiliza.vercel.app",
+    siteName: "Estagiliza",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Estagiliza — Plataforma de Emprego e Estágio com IA em Angola",
+      },
+    ],
     type: "website",
     locale: "pt_AO",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Estagiliza — Emprego & Estágio com IA em Angola",
+    description: "Analisa o teu CV com Inteligência Artificial, encontra vagas reais em Angola e candidata-te com cartas personalizadas.",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
 

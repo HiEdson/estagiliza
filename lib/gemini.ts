@@ -8,60 +8,77 @@ const MODEL = "gemini-2.5-flash";
 export async function searchJobs(profile: UserProfile): Promise<JobListing[]> {
   const skillsStr = profile.skills.slice(0, 8).join(", ");
   
-  // Calculate dynamic date filter to get posts from the last 4 months (avoiding expired/404 postings)
+  // Calculate dynamic date filter to get posts from the last 12 months (ensures a wide pool of vacancies while avoiding completely outdated ones)
   const dateLimit = new Date();
-  dateLimit.setMonth(dateLimit.getMonth() - 4);
+  dateLimit.setMonth(dateLimit.getMonth() - 12);
   const dateStr = dateLimit.toISOString().split("T")[0]; // YYYY-MM-DD
   const dateFilter = `after:${dateStr}`;
 
-  const prompt = `És um assistente especializado em encontrar oportunidades de emprego e estágio para candidatos angolanos. Usa o Google Search de forma inteligente para pesquisar e extrair vagas de emprego e estágio REAIS, ATIVAS e RECENTES (publicadas no primeiro semestre de 2026).
+  const prompt = `És um assistente altamente especializado em encontrar oportunidades de emprego e estágio em Angola. O teu objetivo absoluto é usar a pesquisa do Google Search de forma inteligente e profunda para encontrar vagas REAIS, ATIVAS e RECENTES de emprego ou estágio destinadas a candidatos em Angola.
 
 Perfil do candidato:
 - Nome: ${profile.name || "Candidato"}
-- Área: ${profile.area}
+- Área de interesse/estudo: ${profile.area}
 - Nível de escolaridade: ${profile.level}
 - Localização: ${profile.location || "Angola"}
-- Competências: ${skillsStr}
+- Competências principais: ${skillsStr}
 - Línguas: ${profile.languages.join(", ")}
-- Experiência: ${profile.experience}
+- Resumo da Experiência: ${profile.experience}
 
-INSTRUÇÕES DE PESQUISA (GOOGLE SEARCH):
-- Formula livremente as tuas próprias queries de pesquisa simplificadas no Google Search com base no perfil acima. Deves fazer 3 a 4 pesquisas diferentes para cobrir estágios, empregos juniores e posições remotas.
-- CRÍTICO (TEMPO E FRESCURA): Para garantir que as vagas estão ativas, não expiraram e os links do LinkedIn funcionam, deves incluir obrigatoriamente o filtro temporal "${dateFilter}" em TODAS as tuas pesquisas do Google.
-  Exemplos de termos de pesquisa:
-  - "estagio React Angola ${dateFilter}"
-  - "programador junior Luanda ${dateFilter}"
-  - "vaga Nodejs Portugal ${dateFilter}"
-  - "suporte tecnico Luanda ${dateFilter}"
-- CRÍTICO (SIMPLIFICAÇÃO): NÃO faças pesquisas com frases demasiado longas ou parênteses tirados diretamente do perfil. Evita pesquisar a Área exata entre aspas se esta for complexa.
+RESTRIÇÃO ABSOLUTA E EXCLUSIVA (APENAS VAGAS EM ANGOLA):
+1. Todas as tuas queries de pesquisa do Google MUST incluir termos que restrinjam os resultados a Angola (ex: "Angola", "Luanda", "Benguela", "Huambo", "Viana", "Talona", etc.) ou a sites de recrutamento angolanos.
+2. É RIGOROSAMENTE PROIBIDO retornar vagas de outros países (como Portugal, Brasil, Moçambique, etc.). Só deves aceitar vagas que sejam presenciais/híbridas em Angola ou vagas 100% remotas mas declaradamente abertas para candidatos residentes em Angola.
+3. Se um anúncio ou link de vaga for do LinkedIn ou de outro site geral, certifica-te de que a localização física da vaga é explicitamente em Angola.
+4. Foca as tuas pesquisas primariamente em domínios nacionais angolanos ou plataformas dedicadas a Angola, tais como:
+   - empregosangola.com
+   - jobisuma.com
+   - portalemprego.co.ao
+   - apolo.co.ao
+   - jobartis.com
+   - linkedin.com/jobs (onde a localização indicada seja obrigatoriamente Angola)
 
-REGRAS CRÍTICAS DE FONTES E LINKS (ANTI-404):
-- Só inclui vagas com URLs que REALMENTE EXISTEM e que encontraste nos resultados da pesquisa.
-- CRÍTICO: No campo "url", deves extrair e incluir o URL original e direto do anúncio (ex: https://www.linkedin.com/jobs/view/12345... ou https://www.empregosangola.com/vaga/...).
-- ABSOLUTAMENTE PROIBIDO: NÃO utilizes URLs internas ou de redirecionamento da Google ou Vertex (como "https://vertexaisearch.cloud.google.com/grounding-api-redirect/..."). Se o resultado tiver esse redirect, deves extrair o link de destino original ou descartar a vaga.
-- Se o link direto de uma vaga no LinkedIn não estiver disponível no snippet, usa um link direto funcional ou a URL real correspondente da vaga específica.
-- Rejeita qualquer vaga que tenha sido publicada há mais de 4 meses ou que já saibas que expirou.
+INSTRUÇÕES PARA PESQUISA AMPLA (WIDE SEARCH - EXPANDIR OS TERMOS DE FORMA INTELIGENTE):
+Para evitar que a pesquisa falhe devido a termos demasiado específicos ou restritos, deves tornar as tuas queries de pesquisa no Google Search EXTREMAMENTE AMPLAS e ABRANGENTES, mas mantendo a relevância para o perfil da pessoa:
+1. NÃO pesquises usando a frase inteira da "Área de interesse" se ela for muito longa ou contiver barras/parêntesis. Em vez disso, deduz múltiplos termos gerais relacionados, sinónimos, cargos semelhantes, áreas adjacentes ou competências transferíveis.
+2. Exemplos de como alargar termos de pesquisa com base na área:
+   - Se a área for "Desenvolvimento Web (React / Node.js)", cria queries focadas em: "programador", "informatica", "desenvolvedor", "tecnologia", "TI", "suporte", "software".
+   - Se a área for "Contabilidade e Finanças" ou "Auditoria", cria queries para: "contabilidade", "financas", "gestao", "tesouraria", "auditoria", "administrativo", "banco".
+   - Se a área for "Recursos Humanos" ou "Psicologia Organizacional", cria queries para: "recursos humanos", "recrutamento", "psicologia", "administracao", "secretariado".
+   - Se a área for "Marketing e Comunicação", cria queries para: "marketing", "comunicação", "designer", "redes sociais", "vendas", "publicidade", "apoio ao cliente".
+   - Se a área for "Engenharia Civil" ou similar, cria queries para: "engenharia civil", "construção", "fiscalização", "obras", "desenhador", "projetos".
+   - Se a área for "Logística e Distribuição", cria queries para: "logistica", "compras", "armazem", "distribuicao", "transportes", "stock".
+3. Desenvolve 3 a 4 pesquisas Google diferentes e amplas usando operadores OR e AND. Exemplos de queries a formular:
+   - "estagio [Termo Geral 1] Angola ${dateFilter}" site:empregosangola.com OR site:jobisuma.com OR site:linkedin.com
+   - "emprego [Termo Geral 2] Luanda ${dateFilter}" site:linkedin.com OR site:empregosangola.com OR site:portalemprego.co.ao
+   - "vaga [Competência Principal ou Termo Geral 3] Angola ${dateFilter}" site:jobisuma.com OR site:empregosangola.com OR site:apolo.co.ao OR site:linkedin.com
+   - "[Termo Geral 4] Angola recrutamento ${dateFilter}" site:linkedin.com OR site:jobartis.com OR site:empregosangola.com
 
-Retorna um array JSON com até 10 oportunidades verificadas:
+REGRAS CRÍTICAS DE FONTES E LINKS:
+1. Só inclui vagas com URLs de origem que REALMENTE EXISTEM e que levassem diretamente à vaga.
+2. CRÍTICO: No campo "url", extrai o URL direto e original da vaga (ex: https://www.linkedin.com/jobs/view/... ou https://www.empregosangola.com/vaga/...).
+3. ABSOLUTAMENTE PROIBIDO: Não retornes URLs internas ou redirects da Google/Vertex (como "https://vertexaisearch.cloud.google.com/grounding-api-redirect/..."). Tens de extrair o link original do site onde a vaga está publicada.
+4. Exclui vagas com data de publicação anterior a 12 meses (${dateFilter}) ou que saibas que estão expiradas.
+
+Retorna um array JSON com até 10 oportunidades verificadas que se enquadrem no perfil alargado do candidato em Angola:
 [
   {
     "id": "job-1",
-    "title": "Título exacto da vaga",
-    "company": "Nome da empresa",
-    "location": "Cidade, País",
+    "title": "Título exato da vaga encontrado no site",
+    "company": "Nome da empresa contratante",
+    "location": "Cidade, Angola (ex: Luanda, Angola)",
     "type": "estágio|emprego|remoto",
     "url": "https://url-real-e-directa-da-vaga.com/path/especifico",
-    "description": "Descrição da vaga em 2-3 frases",
-    "requirements": ["requisito 1", "requisito 2"],
-    "compatibilityScore": 85,
-    "postedDate": "data aproximada",
-    "salary": "salário se disponível, caso contrário null",
-    "applicationEmail": "email@empresa.com se disponível, caso contrário null",
-    "source": "LinkedIn|Indeed|empregosangola.com|etc"
+    "description": "Descrição sucinta da vaga em 2-3 frases, destacando o papel principal",
+    "requirements": ["requisito principal 1", "requisito principal 2"],
+    "compatibilityScore": 80,
+    "postedDate": "data aproximada da publicação",
+    "salary": "salário se mencionado na publicação, caso contrário null",
+    "applicationEmail": "email para candidatura se mencionado no texto da vaga, caso contrário null",
+    "source": "Nome do portal de origem (ex: LinkedIn, Empregos Angola, Jobisuma, etc.)"
   }
 ]
 
-Retorna APENAS o array JSON.`;
+Retorna APENAS o array JSON, sem blocos de texto adicionais, markdown extras (fora o array JSON) ou explicações.`;
 
   const response = await genai.models.generateContent({
     model: MODEL,
